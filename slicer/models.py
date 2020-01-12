@@ -1,4 +1,6 @@
 import zipfile
+import png
+from functools import reduce
 
 import numpy as np
 from django.db import models
@@ -32,7 +34,31 @@ class ImageSeries(models.Model):
         self.study_uid = dicom_datasets[0].StudyInstanceUID
         self.series_uid = dicom_datasets[0].SeriesInstanceUID
         super(ImageSeries, self).save(*args, **kwargs)
-        # TODO: dump PNG files for later viewing
+
+        image_num = 0
+        for voxel_sheet in self.voxels:
+            image_num += 1
+            processed_voxels = self.process_voxel_sheet(voxel_sheet)
+            f = open('test' + str(image_num) + '.png', 'wb')
+            w = png.Writer(len(processed_voxels[0]), len(processed_voxels), bitdepth=8)
+            w.write(f, processed_voxels)
+            f.close()
 
     class Meta:
         verbose_name_plural = 'Image Series'
+
+    def process_voxel_sheet(self, voxel_sheet):
+        # coerce the input data to a format that agrees with pypng
+        # TODO: this data has to be heavily compressed to fit in bytes for
+        # pypng. Investigate the possibility that it doesn't have to be.
+        inverted = []
+        for voxels in voxel_sheet:
+            new_voxel = []
+            for datum in voxels:
+                datum = datum / 8
+                datum = abs(datum)
+                datum = int(datum)
+                datum = min(255, datum)
+                new_voxel.append(datum)
+            inverted.append(new_voxel)
+        return inverted
