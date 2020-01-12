@@ -1,10 +1,30 @@
 {% extends "base.html" %}
 
 {% block "content" %}
-<h1>view images</h1>
-
+<div style="margin:auto; width:10%; max-width:100%;">
 {% for img in images %}
-<img src="{{img}}"/>
+<img class="image" id="{{ forloop.counter }}" style="display:none; width:100%;" src="{{img}}"/>
 {% endfor %}
 
+<div class="slidecontainer">
+      <input type="range" min="1" max="{{count}}" value="{{start}}" class="slider" id="range">
+</div>
+<p id="num">{{start}}</p>
+
+</div>
+
+<script>
+slider = document.getElementById("range");
+output = document.getElementById("num");
+document.getElementById("{{start}}").style.display = "block";
+
+recent = "{{start}}";
+
+slider.oninput = function() {
+    output.innerHTML = this.value;
+    document.getElementById(this.value).style.display = "block";
+    document.getElementById(recent).style.display = "none";
+    recent = this.value;
+}
+</script>
 <p></p>{% endblock %}

@@ -32,4 +32,6 @@ def image_viewer(request):
     return render(request, 'image_viewer.html', {
         #folder name for specific series
         "images":base64_data,
+        "count": len(base64_data),
+        "start": int(len(base64_data) / 2),
     })
