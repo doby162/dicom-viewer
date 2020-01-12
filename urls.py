@@ -17,9 +17,10 @@ from django.conf.urls import url
 from django.contrib import admin
 
 from slicer.views import image_series_list
-
+from slicer.views import image_viewer
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', image_series_list),
+    url(r'^images/', image_viewer),
 ]
