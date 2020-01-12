@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+import os
 from .models import ImageSeries
 
 
@@ -19,7 +19,11 @@ def image_series_list(request):
 def image_viewer(request):
     id = str(request).split("/")[-1]
     id = id.split("'")[0]
+
+    images = os.listdir("media/image_dumps/" + id)
+
     return render(request, 'image_viewer.html', {
         #folder name for specific series
-        "id":id,
+        "folder":id,
+        "images":images,
     })
