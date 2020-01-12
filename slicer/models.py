@@ -54,7 +54,7 @@ class ImageSeries(models.Model):
             image_num += 1
             processed_voxels = self.process_voxel_sheet(voxel_sheet)
             f = open(str(image_num).zfill(3) + '.png', 'wb')
-            w = png.Writer(len(processed_voxels[0]), len(processed_voxels), bitdepth=8)
+            w = png.Writer(len(processed_voxels[0]), len(processed_voxels), bitdepth=11)
             w.write(f, processed_voxels)
             f.close()
 
@@ -63,17 +63,14 @@ class ImageSeries(models.Model):
 
     def process_voxel_sheet(self, voxel_sheet):
         # coerce the input data to a format that agrees with pypng
-        #
-        # TODO: this data has to be heavily compressed to fit in bytes for
-        # pypng. Investigate the possibility that it doesn't have to be.
         inverted = []
         for voxels in voxel_sheet:
             new_voxel = []
             for datum in voxels:
-                datum = datum / 8
+                datum = datum
                 datum = abs(datum)
                 datum = int(datum)
-                datum = min(255, datum)
+                datum = min(2047, datum)
                 new_voxel.append(datum)
             inverted.append(new_voxel)
         return inverted
