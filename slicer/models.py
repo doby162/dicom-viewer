@@ -1,6 +1,7 @@
 import zipfile
 import png
 from functools import reduce
+import os
 
 import numpy as np
 from django.db import models
@@ -35,11 +36,24 @@ class ImageSeries(models.Model):
         self.series_uid = dicom_datasets[0].SeriesInstanceUID
         super(ImageSeries, self).save(*args, **kwargs)
 
+        # avoid adding fields to the database byt infering
+        # a unique folder name from the other folders
+        folder = str(self.voxel_file).split("_")[-1]
+
+        image_dump_folder = "media/image_dumps/" + folder
+        if not os.path.isdir(image_dump_folder):
+            try:
+                os.makedirs(image_dump_folder)
+            except OSError:
+                pass
+
+        os.chdir(image_dump_folder)
+
         image_num = 0
         for voxel_sheet in self.voxels:
             image_num += 1
             processed_voxels = self.process_voxel_sheet(voxel_sheet)
-            f = open('test' + str(image_num) + '.png', 'wb')
+            f = open(str(image_num).zfill(3) + '.png', 'wb')
             w = png.Writer(len(processed_voxels[0]), len(processed_voxels), bitdepth=8)
             w.write(f, processed_voxels)
             f.close()
@@ -49,6 +63,7 @@ class ImageSeries(models.Model):
 
     def process_voxel_sheet(self, voxel_sheet):
         # coerce the input data to a format that agrees with pypng
+        #
         # TODO: this data has to be heavily compressed to fit in bytes for
         # pypng. Investigate the possibility that it doesn't have to be.
         inverted = []
