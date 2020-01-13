@@ -38,6 +38,9 @@ class ImageSeries(models.Model):
         super(ImageSeries, self).save(*args, **kwargs)
 
         self.image_folder = str(self.voxel_file).split("_")[-1]
+        if "/" in self.image_folder:
+            self.image_folder = "default"
+
         super().save(*args, **kwargs)
 
         image_dump_folder = "media/image_dumps/" + self.image_folder
