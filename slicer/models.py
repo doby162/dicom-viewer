@@ -47,6 +47,8 @@ class ImageSeries(models.Model):
             except OSError:
                 pass
 
+        #save the working directory for the cleanup phase
+        cwd = os.getcwd()
         os.chdir(image_dump_folder)
 
         image_num = 0
@@ -57,6 +59,8 @@ class ImageSeries(models.Model):
             w = png.Writer(len(processed_voxels[0]), len(processed_voxels), bitdepth=11)
             w.write(f, processed_voxels)
             f.close()
+
+        os.chdir(cwd)
 
     class Meta:
         verbose_name_plural = 'Image Series'
