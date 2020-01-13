@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
 {% block "content" %}
-<div style="margin:auto; width:10%; max-width:100%;">
+<div style="margin:auto; width:15%; max-width:100%; height:85vh;">
 {% for img in images %}
-<img class="image" id="{{ forloop.counter }}" style="display:none; width:100%;" src="{{img}}"/>
+<img class="image" id="{{ forloop.counter }}" style="display:none; height:85vh;" src="{{img}}"/>
 {% endfor %}
 
 <div class="slidecontainer">
