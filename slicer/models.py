@@ -13,6 +13,7 @@ from slicer.dicom_import import dicom_datasets_from_zip, combine_slices
 class ImageSeries(models.Model):
     dicom_archive = models.FileField(upload_to="dicom/")
     voxel_file = models.FileField(upload_to="voxels/")
+    image_folder = models.CharField(max_length=16)
     patient_id = models.CharField(max_length=64, null=True)
     study_uid = models.CharField(max_length=64)
     series_uid = models.CharField(max_length=64)
@@ -36,11 +37,10 @@ class ImageSeries(models.Model):
         self.series_uid = dicom_datasets[0].SeriesInstanceUID
         super(ImageSeries, self).save(*args, **kwargs)
 
-        # avoid adding fields to the database byt infering
-        # a unique folder name from the other folders
-        folder = str(self.voxel_file).split("_")[-1]
+        self.image_folder = str(self.voxel_file).split("_")[-1]
+        super().save(*args, **kwargs)
 
-        image_dump_folder = "media/image_dumps/" + folder
+        image_dump_folder = "media/image_dumps/" + self.image_folder
         if not os.path.isdir(image_dump_folder):
             try:
                 os.makedirs(image_dump_folder)

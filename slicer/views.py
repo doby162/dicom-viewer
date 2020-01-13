@@ -7,10 +7,6 @@ import base64
 def image_series_list(request):
     image_series_array = []
     for image_series in ImageSeries.objects.all():
-        image_folder = str(image_series.voxel_file).split("_")[-1]
-        # TODO replace this logic duplication from the save function
-        # by adding a field to the model
-        image_series.image_folder = image_folder
         image_series_array.append(image_series)
 
     return render(request, 'image_series_list.html', {

@@ -5,4 +5,4 @@ from .models import ImageSeries
 
 @admin.register(ImageSeries)
 class ImageSeriesAdmin(admin.ModelAdmin):
-    readonly_fields = ('voxel_file', 'patient_id', 'study_uid', 'series_uid')
+    readonly_fields = ('image_folder','voxel_file', 'patient_id', 'study_uid', 'series_uid')
