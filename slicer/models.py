@@ -1,4 +1,5 @@
 import zipfile
+from contextlib import contextmanager
 import png
 from functools import reduce
 import os
@@ -50,20 +51,15 @@ class ImageSeries(models.Model):
             except OSError:
                 pass
 
-        #save the working directory for the cleanup phase
-        cwd = os.getcwd()
-        os.chdir(image_dump_folder)
-
-        image_num = 0
-        for voxel_sheet in self.voxels:
-            image_num += 1
-            processed_voxels = self.process_voxel_sheet(voxel_sheet)
-            f = open(str(image_num).zfill(3) + '.png', 'wb')
-            w = png.Writer(len(processed_voxels[0]), len(processed_voxels), bitdepth=11)
-            w.write(f, processed_voxels)
-            f.close()
-
-        os.chdir(cwd)
+        with cd(image_dump_folder):
+            image_num = 0
+            for voxel_sheet in self.voxels:
+                image_num += 1
+                processed_voxels = self.process_voxel_sheet(voxel_sheet)
+                f = open(str(image_num).zfill(3) + '.png', 'wb')
+                w = png.Writer(len(processed_voxels[0]), len(processed_voxels), bitdepth=11)
+                w.write(f, processed_voxels)
+                f.close()
 
     class Meta:
         verbose_name_plural = 'Image Series'
@@ -81,3 +77,13 @@ class ImageSeries(models.Model):
                 new_voxel.append(datum)
             inverted.append(new_voxel)
         return inverted
+
+#TODO: make a file for helper funcs
+@contextmanager
+def cd(newdir):
+    prevdir = os.getcwd()
+    os.chdir(os.path.expanduser(newdir))
+    try:
+        yield
+    finally:
+        os.chdir(prevdir)
