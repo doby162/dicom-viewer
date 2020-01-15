@@ -52,31 +52,26 @@ class ImageSeries(models.Model):
                 pass
 
         with cd(image_dump_folder):
+            vectorized_process_voxels = np.vectorize(self.process_voxels)
+            voxel_sheets = vectorized_process_voxels(self.voxels)
+
             image_num = 0
-            for voxel_sheet in self.voxels:
+            for voxel_sheet in voxel_sheets:
                 image_num += 1
-                processed_voxels = self.process_voxel_sheet(voxel_sheet)
+
+                #save the image
+                #TODO use contextmanager for the file IO
                 f = open(str(image_num).zfill(3) + '.png', 'wb')
-                w = png.Writer(len(processed_voxels[0]), len(processed_voxels), bitdepth=11)
-                w.write(f, processed_voxels)
+                w = png.Writer(len(voxel_sheet[0]), len(voxel_sheet), bitdepth=11)
+                w.write(f, voxel_sheet.tolist())
                 f.close()
 
     class Meta:
         verbose_name_plural = 'Image Series'
 
-    def process_voxel_sheet(self, voxel_sheet):
+    def process_voxels(self, voxel):
         # coerce the input data to a format that agrees with pypng
-        inverted = []
-        for voxels in voxel_sheet:
-            new_voxel = []
-            for datum in voxels:
-                datum = datum
-                datum = abs(datum)
-                datum = int(datum)
-                datum = min(2047, datum)
-                new_voxel.append(datum)
-            inverted.append(new_voxel)
-        return inverted
+        return min(2047, int(abs(voxel)))
 
 #TODO: make a file for helper funcs
 @contextmanager
