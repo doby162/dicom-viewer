@@ -5,12 +5,8 @@ import base64
 
 
 def image_series_list(request):
-    image_series_array = []
-    for image_series in ImageSeries.objects.all():
-        image_series_array.append(image_series)
-
     return render(request, 'image_series_list.html', {
-        'all_image_series': image_series_array,
+        'all_image_series': ImageSeries.objects.all(),
     })
 
 def image_viewer(request):
