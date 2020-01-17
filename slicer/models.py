@@ -3,6 +3,7 @@ from contextlib import contextmanager
 import png
 from functools import reduce
 import os
+from multiprocessing import Pool
 
 import numpy as np
 from django.db import models
@@ -52,19 +53,10 @@ class ImageSeries(models.Model):
                 pass
 
         with cd(image_dump_folder):
+            p = Pool(5)
             vectorized_process_voxels = np.vectorize(self.process_voxels)
-            voxel_sheets = vectorized_process_voxels(self.voxels)
-
-            image_num = 0
-            for voxel_sheet in voxel_sheets:
-                image_num += 1
-
-                #save the image
-                #TODO use contextmanager for the file IO
-                f = open(str(image_num).zfill(3) + '.png', 'wb')
-                w = png.Writer(len(voxel_sheet[0]), len(voxel_sheet), bitdepth=11)
-                w.write(f, voxel_sheet.tolist())
-                f.close()
+            self.voxel_sheets = vectorized_process_voxels(self.voxels)
+            list(p.map(self.process_image, range(len(self.voxel_sheets))))
 
     class Meta:
         verbose_name_plural = 'Image Series'
@@ -72,6 +64,13 @@ class ImageSeries(models.Model):
     def process_voxels(self, voxel):
         # coerce the input data to a format that agrees with pypng
         return min(2047, int(abs(voxel)))
+
+    def process_image(self, image_num):
+        sheet = self.voxel_sheets[image_num]
+        f = open(str(image_num).zfill(3) + '.png', 'wb')
+        w = png.Writer(len(sheet[0]), len(sheet), bitdepth=11)
+        w.write(f, sheet.tolist())
+        f.close()
 
 #TODO: make a file for helper funcs
 @contextmanager
